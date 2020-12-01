@@ -22,6 +22,7 @@ class DataGenerator(keras.utils.Sequence):
                  shuffle=True,
                  num_workers=0,
                  replacement: bool = False,
+                 drop_last: bool = True,
                  ):
         """
 
@@ -33,6 +34,7 @@ class DataGenerator(keras.utils.Sequence):
             loading in one batch. 0 means that the data will be loaded in the main process.
             (default: ``0``)
         :param replacement (bool): samples are drawn with replacement if ``True``, default=False
+        :param drop_last (bool): uneven samples are ignored with drop_last if ``False``, default=False
         :param collate_fn (callable, optional):
         """
         self.dataset = dataset
@@ -40,6 +42,7 @@ class DataGenerator(keras.utils.Sequence):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.replacement = replacement
+        self.drop_last = drop_last
         self.indices = []
         self.collate_fn = collate_fn
         self.on_epoch_end()
@@ -73,4 +76,7 @@ class DataGenerator(keras.utils.Sequence):
             self.indices = seq
 
     def __len__(self):
-        return int(np.floor(len(self.dataset) / self.batch_size))
+        if self.drop_last:
+            return int(np.floor(len(self.dataset) / self.batch_size))
+        else:
+            return int(np.ceil(len(self.dataset) / self.batch_size))
